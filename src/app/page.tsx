@@ -1,39 +1,42 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { cn } from "@/lib/utils"
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { cn } from "@/lib/utils";
 
 // Componentes de sección
-import HeroSection from "@/components/hero-section"
-import ServicesSection from "@/components/services-section"
-import TestimonialsSection from "@/components/works-section"
-import ContactSection from "@/components/contact-section"
-import Footer from "@/components/footer"
+import HeroSection from "@/components/hero-section";
+import ServicesSection from "@/components/services-section";
+import TestimonialsSection from "@/components/works-section";
+import ContactSection from "@/components/contact-section";
+import Footer from "@/components/footer";
 import WorksSection from "@/components/works-section";
 
 export default function LandingPage() {
-  const [scrolled, setScrolled] = useState(false)
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
-    }
+      setScrolled(window.scrollY > 50);
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
+    if (typeof window !== "undefined") {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-black to-purple-950">
@@ -46,24 +49,22 @@ export default function LandingPage() {
       >
         <div className="container mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-26 h-26 relative">
-              <Link href="/">
+            <Link href="/">
+              <div className="relative w-[100px] h-[100px]">
                 <Image
                   src="/logo.png"
                   alt="Mi Logo"
-                  width={80}
-                  height={80}
+                  fill
                   className="object-contain"
                   priority
                 />
-              </Link>
-            </div>
-           {/*<span className="text-white font-bold text-xl">GIMLET</span> */}{/*TEXTO SI EN UN FUTURO QUIERO USAR*/}
+              </div>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            {["Inicio", "Servicios", "Trabajos", "Contacto"].map((item) => (
+            {["inicio", "servicios", "trabajos", "contacto"].map((item) => (
               <button
                 key={item}
                 onClick={() => scrollToSection(item)}
@@ -89,8 +90,9 @@ export default function LandingPage() {
               </Button>
             </SheetTrigger>
             <SheetContent className="bg-black/95 border-purple-900/50">
+              <DialogTitle className="sr-only">Menú de Navegación</DialogTitle>
               <div className="flex flex-col gap-6 mt-10">
-                {["inicio", "servicios", "testimonios", "contacto"].map((item) => (
+                {["inicio", "servicios", "trabajos", "contacto"].map((item) => (
                   <SheetTrigger asChild key={item}>
                     <button
                       onClick={() => scrollToSection(item)}
@@ -116,13 +118,13 @@ export default function LandingPage() {
 
       {/* Main Content */}
       <main>
-        <HeroSection/>
+        <HeroSection />
         <ServicesSection />
-        <WorksSection/>
+        <WorksSection />
         <ContactSection />
       </main>
 
       <Footer />
     </div>
-  )
+  );
 }
