@@ -1,47 +1,54 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useInView } from "react-intersection-observer";
+import { useInView } from "react-intersection-observer"
 import Image from "next/image"
 import { useState } from "react"
 import { Expand } from "lucide-react"
+import Link from "next/link"
 
-// Datos de ejemplo para los trabajos
-const works = [
+// Datos actualizados para los trabajos con imágenes
+export const works = [
   {
     id: 1,
     title: "Fashion",
-    category: "2024",
-    image: "/work1.jpg",
+    slug: "fashion",
+    category: "",
+    image: "/work1.jpg",  // Actualiza con las imágenes reales
   },
   {
     id: 2,
     title: "Urban",
-    category: "2024",
+    slug: "urban",
+    category: "",
     image: "/work2.jpg",
   },
   {
     id: 3,
     title: "Events",
-    category: "2024",
+    slug: "events",
+    category: "",
     image: "/work3.jpg",
   },
   {
     id: 4,
     title: "Food",
-    category: "2024",
+    slug: "food",
+    category: "",
     image: "/work4.jpg",
   },
   {
     id: 5,
     title: "Industry",
-    category: "2024",
+    slug: "industry",
+    category: "",
     image: "/work5.jpg",
   },
   {
     id: 6,
     title: "Corporate",
-    category: "2024",
+    slug: "corporate",
+    category: "",
     image: "/work6.jpg",
   },
 ]
@@ -84,52 +91,57 @@ export default function WorksSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           {works.map((work, index) => (
-            <motion.div
-              key={work.id}
-              className="relative aspect-square overflow-hidden rounded-lg bg-black/40 border border-purple-900/30"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              onHoverStart={() => setHoveredItem(work.id)}
-              onHoverEnd={() => setHoveredItem(null)}
-            >
-              <Image
-                src={work.image || "/work"}
-                alt={work.title}
-                fill
-                className="object-cover transition-transform duration-500 ease-in-out"
-                style={{
-                  transform: hoveredItem === work.id ? "scale(1.1)" : "scale(1)",
-                }}
-              />
-              <div
-                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 flex flex-col justify-end transition-opacity duration-300"
-                style={{
-                  opacity: hoveredItem === work.id ? 1 : 0.7,
+            <Link href={`/trabajos/${work.slug}`} key={work.id} className="block">
+              <motion.div
+                className="relative aspect-square overflow-hidden rounded-lg bg-black/40 border border-purple-900/30"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                onHoverStart={() => setHoveredItem(work.id)}
+                onHoverEnd={() => setHoveredItem(null)}
+                whileHover={{
+                  scale: 1.03,
+                  transition: { duration: 0.2 },
                 }}
               >
-                <div
-                  className="transform transition-transform duration-300"
+                <Image
+                  src={work.image || "/placeholder.svg"}
+                  alt={work.title}
+                  fill
+                  className="object-cover transition-transform duration-500 ease-in-out"
                   style={{
-                    transform: hoveredItem === work.id ? "translateY(0)" : "translateY(20px)",
+                    transform: hoveredItem === work.id ? "scale(1.1)" : "scale(1)",
+                  }}
+                />
+                <div
+                  className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 flex flex-col justify-end transition-opacity duration-300"
+                  style={{
+                    opacity: hoveredItem === work.id ? 1 : 0.7,
                   }}
                 >
-                  <h3 className="text-xl font-bold text-white mb-1">{work.title}</h3>
-                  <p className="text-purple-300 text-sm">{work.category}</p>
-                </div>
-
-                {hoveredItem === work.id && (
-                  <motion.div
-                    className="absolute top-4 right-4 bg-purple-600/80 p-2 rounded-full"
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.2 }}
+                  <div
+                    className="transform transition-transform duration-300"
+                    style={{
+                      transform: hoveredItem === work.id ? "translateY(0)" : "translateY(20px)",
+                    }}
                   >
-                    <Expand className="h-5 w-5 text-white" />
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
+                    <h3 className="text-xl font-bold text-white mb-1">{work.title}</h3>
+                    <p className="text-purple-300 text-sm">{work.category}</p>
+                  </div>
+
+                  {hoveredItem === work.id && (
+                    <motion.div
+                      className="absolute top-4 right-4 bg-purple-600/80 p-2 rounded-full"
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Expand className="h-5 w-5 text-white" />
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </motion.div>
       </div>
@@ -139,4 +151,3 @@ export default function WorksSection() {
     </section>
   )
 }
-

@@ -24,26 +24,69 @@ export default function ContactSection() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [formStatus, setFormStatus] = useState<{
+    type: "success" | "error" | null
+    message: string
+  }>({ type: null, message: "" })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormState((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setFormStatus({ type: null, message: "" })
 
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setIsSubmitted(true)
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formState),
+      })
+
+      // Primero verificamos si la respuesta es válida
+      if (!response.ok) {
+        let errorMessage = "Error al enviar el formulario"
+
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+        } catch (jsonError) {
+          console.error("Error al analizar la respuesta JSON:", jsonError)
+          // Si no podemos analizar la respuesta como JSON, usamos el mensaje genérico
+        }
+
+        throw new Error(errorMessage)
+      }
+
+      // Si la respuesta es válida, intentamos analizarla como JSON
+      let data
+      try {
+        data = await response.json()
+      } catch (jsonError) {
+        console.error("Error al analizar la respuesta JSON:", jsonError)
+        throw new Error("Error al procesar la respuesta del servidor")
+      }
+
+      // Éxito
+      setFormStatus({
+        type: "success",
+        message: data.message || "¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.",
+      })
       setFormState({ name: "", email: "", message: "" })
-
-      // Reset success message after 5 seconds
-      setTimeout(() => setIsSubmitted(false), 5000)
-    }, 1500)
+    } catch (error) {
+      // Error
+      setFormStatus({
+        type: "error",
+        message: error instanceof Error ? error.message : "Error al enviar el formulario. Inténtalo de nuevo.",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -72,7 +115,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h3 className="text-white font-medium">Email</h3>
-                  <p className="text-purple-200/70">info@tuempresa.com</p>
+                  <p className="text-purple-200/70">Contacto@gimlet.com.ar</p>
                 </div>
               </div>
 
@@ -83,16 +126,6 @@ export default function ContactSection() {
                 <div>
                   <h3 className="text-white font-medium">Teléfono</h3>
                   <p className="text-purple-200/70">+12 123 456 789</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-purple-600/20 flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-white font-medium">Soporte</h3>
-                  <p className="text-purple-200/70">soporte@tuempresa.com</p>
                 </div>
               </div>
             </div>
@@ -106,78 +139,84 @@ export default function ContactSection() {
           >
             <h3 className="text-2xl font-bold text-white mb-6">Envíanos un mensaje</h3>
 
-            {isSubmitted ? (
-              <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4 text-center">
-                <h4 className="text-white font-medium mb-2">¡Mensaje enviado con éxito!</h4>
-                <p className="text-green-200/80">Nos pondremos en contacto contigo pronto.</p>
+            {formStatus.type && (
+              <div
+                className={`mb-6 p-4 rounded-lg border ${
+                  formStatus.type === "success"
+                    ? "bg-green-500/20 border-green-500/30 text-green-300"
+                    : "bg-red-500/20 border-red-500/30 text-red-300"
+                }`}
+              >
+                <p className="font-medium">{formStatus.type === "success" ? "¡Éxito!" : "Error"}</p>
+                <p className="text-sm mt-1">{formStatus.message}</p>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-purple-100">
-                    Nombre
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formState.name}
-                    onChange={handleChange}
-                    placeholder="Tu nombre"
-                    required
-                    className="bg-black/60 border-purple-900/50 focus:border-purple-500 text-white"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-purple-100">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formState.email}
-                    onChange={handleChange}
-                    placeholder="tu@gmail.com"
-                    required
-                    className="bg-black/60 border-purple-900/50 focus:border-purple-500 text-white"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="message" className="text-purple-100">
-                    Mensaje
-                  </Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    value={formState.message}
-                    onChange={handleChange}
-                    placeholder="¿Cómo podemos ayudarte?"
-                    required
-                    className="bg-black/60 border-purple-900/50 focus:border-purple-500 text-white min-h-[120px]"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-6 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/30"
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Enviando...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <Send className="h-5 w-5" />
-                      Enviar mensaje
-                    </span>
-                  )}
-                </Button>
-              </form>
             )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-purple-100">
+                  Nombre
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formState.name}
+                  onChange={handleChange}
+                  placeholder="Tu nombre"
+                  required
+                  className="bg-black/60 border-purple-900/50 focus:border-purple-500 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-purple-100">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formState.email}
+                  onChange={handleChange}
+                  placeholder="tu@gmail.com"
+                  required
+                  className="bg-black/60 border-purple-900/50 focus:border-purple-500 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="message" className="text-purple-100">
+                  Mensaje
+                </Label>
+                <Textarea
+                  id="message"
+                  name="message"
+                  value={formState.message}
+                  onChange={handleChange}
+                  placeholder="¿Cómo podemos ayudarte?"
+                  required
+                  className="bg-black/60 border-purple-900/50 focus:border-purple-500 text-white min-h-[120px]"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-6 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/30"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Enviando...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Send className="h-5 w-5" />
+                    Enviar mensaje
+                  </span>
+                )}
+              </Button>
+            </form>
           </motion.div>
         </div>
       </div>
